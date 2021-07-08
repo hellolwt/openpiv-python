@@ -80,7 +80,7 @@ def global_val(u, v, u_thresholds, v_thresholds):
 
 def global_std(u, v, std_threshold=5):
     """Eliminate spurious vectors with a global threshold defined by the
-    standard deviation
+    standard deviation 标准差
 
     This validation method tests for the spatial consistency of the data
     and outliers vector are replaced with NaN (Not a Number) if at least
@@ -204,7 +204,7 @@ def sig2noise_val(u, v, s2n, w=None, threshold=1.05):
 
 
 def local_median_val(u, v, u_threshold, v_threshold, size=1):
-    """Eliminate spurious vectors with a local median threshold.
+    """Eliminate spurious vectors with a local median threshold. 局部中值
 
     This validation method tests for the spatial consistency of the data.
     Vectors are classified as outliers and replaced with Nan (Not a Number) if
@@ -261,7 +261,7 @@ def local_median_val(u, v, u_threshold, v_threshold, size=1):
     um = generic_filter(masked_u, np.nanmedian, mode='constant',
                         cval=np.nan, footprint=f)
     vm = generic_filter(masked_v, np.nanmedian, mode='constant',
-                        cval=np.nan, footprint=f)
+                        cval=np.nan, footprint=f)       #np.nanmedian沿指定轴计算中位数，而忽略NaN
 
     ind = (np.abs((u - um)) > u_threshold) | (np.abs((v - vm)) > v_threshold)
 

@@ -150,9 +150,9 @@ def moving_window_array(array, window_size, overlap):
     which each slice, (along the first axis) is an interrogation window.
 
     """
-    sz = array.itemsize
+    sz = array.itemsize     #itemsize输出array元素的字节数
     shape = array.shape
-    array = np.ascontiguousarray(array)
+    array = np.ascontiguousarray(array)     #ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快
 
     strides = (
         sz * shape[1] * (window_size - overlap),
@@ -169,7 +169,8 @@ def moving_window_array(array, window_size, overlap):
 
     return numpy.lib.stride_tricks.as_strided(
         array, strides=strides, shape=shape
-    ).reshape(-1, window_size, window_size)
+    ).reshape(-1, window_size, window_size)     #-1表示该维度自动计算
+    #numpy.lib.stride_tricks.as_strided  矩阵分块
 
 
 def find_first_peak(corr):
@@ -287,7 +288,7 @@ def find_subpixel_peak_position(corr, subpixel_method="gaussian"):
         raise ValueError(f"Method not implemented {subpixel_method}")
 
     # the peak locations
-    (peak1_i, peak1_j), _ = find_first_peak(corr)
+    (peak1_i, peak1_j), _ = find_first_peak(corr)     #相关图的最大值坐标
 
     # import pdb; pdb.set_trace()
 
@@ -481,11 +482,11 @@ def fft_correlate_images(image_a, image_b,
     if correlation_method == "linear":
         # have to be normalized, mainly because of zero padding
         size = s1 + s2 - 1
-        fsize = 2 ** np.ceil(np.log2(size)).astype(int)
+        fsize = 2 ** np.ceil(np.log2(size)).astype(int)     #ceil向上取整
         fslice = (slice(0, image_a.shape[0]),
                   slice((fsize[0]-s1[0])//2, (fsize[0]+s1[0])//2),
                   slice((fsize[1]-s1[1])//2, (fsize[1]+s1[1])//2))
-        f2a = rfft2(image_a, fsize, axes=(-2, -1)).conj()
+        f2a = rfft2(image_a, fsize, axes=(-2, -1)).conj()   #conj 取复数共轭
         f2b = rfft2(image_b, fsize, axes=(-2, -1))
         corr = fftshift(irfft2(f2a * f2b).real, axes=(-2, -1))[fslice]
     elif correlation_method == "circular":
@@ -519,11 +520,13 @@ def normalize_intensity(window):
     """
     window = window.astype(np.float32)
     window -= window.mean(axis=(-2, -1),
-                          keepdims=True, dtype=np.float32)
-    tmp = window.std(axis=(-2, -1), keepdims=True)
+                          keepdims=True, dtype=np.float32)      #减窗口（单个）的平均值
+    tmp = window.std(axis=(-2, -1), keepdims=True)      #每个窗口的标准差
     window = np.divide(window, tmp, out=np.zeros_like(window),
                        where=(tmp != 0))
-    return np.clip(window, 0, window.max())
+    return np.clip(window, 0, window.max())     #将数组a中的所有数限定到范围a_min和a_max中；这里将负值置为0
+                                                #a_min：被限定的最小值，所有比a_min小的数都会强制变为a_min；
+                                                #a_max：被限定的最大值，所有比a_max大的数都会强制变为a_max；
 
 
 def correlate_windows(window_a, window_b, correlation_method="fft"):
@@ -759,6 +762,7 @@ def extended_search_area_piv(
     n_rows, n_cols = get_field_shape(frame_a.shape, search_area_size, overlap)
 
     # We implement the new vectorized code
+    #转化为三维数组，第一维为查询窗口数量，2、3维为窗口大小
     aa = moving_window_array(frame_a, search_area_size, overlap)
     bb = moving_window_array(frame_b, search_area_size, overlap)
 
@@ -785,7 +789,7 @@ def extended_search_area_piv(
 
     corr = fft_correlate_images(aa, bb,
                                 correlation_method=correlation_method,
-                                normalized_correlation=normalized_correlation)
+                                normalized_correlation=normalized_correlation)    #相关图corr
     u, v = correlation_to_displacement(corr, n_rows, n_cols,
                                        subpixel_method=subpixel_method)
 
@@ -819,8 +823,8 @@ def correlation_to_displacement(corr, n_rows, n_cols,
     u = np.zeros((n_rows, n_cols))
     v = np.zeros((n_rows, n_cols))
 
-    # center point of the correlation map
-    default_peak_position = np.floor(np.array(corr[0, :, :].shape)/2)
+    # center point of the correlation map   相关图中心点
+    default_peak_position = np.floor(np.array(corr[0, :, :].shape)/2)   #floor向下取整
     for k in range(n_rows):
         for m in range(n_cols):
             # look at studying_correlations.ipynb
