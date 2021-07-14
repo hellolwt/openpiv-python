@@ -139,7 +139,7 @@ def display_vector_field(
     ax.set_aspect(1.)
     # fig.canvas.set_window_title('Vector field, '+str(np.count_nonzero(invalid))+' wrong vectors')
 
-    plt.show()
+    #plt.show()
 
     return fig, ax
 
